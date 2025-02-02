@@ -60,9 +60,9 @@ treefile --file project.treefile --output output_dir
 
 ---
 
-### Sample `.treefile` File
+### Sample `.treefile` File Showing 'Tree Branches'
 
-This sample shows the optional 'tree branches'.
+Lines can also include UTF‑8 “tree branch” characters (e.g., ├──, └──), though this is optional. Indentation (preferably using 4 spaces) defines hierarchy.
 
 ```plaintext
 token-itemize/
@@ -111,17 +111,31 @@ Treefile can create virtual environments based on specified Python versions. If 
 
 ### 3. Context Menu Integration
 
-Treefile supports right-click context menu integration for `.treefile` files on Windows, macOS, and Linux:
+Treefile supports right-click context menu integration (Unpack Treefile) for `.treefile` files on Windows, macOS, and Linux:
 
-- **Windows**: Register the context menu using `register_icon.bat`
+- **Windows**: Register the context menu and file icon using `register_icon.bat`
 - **macOS/Linux**: Use `register_icon.sh` to set up custom file icons and context menu actions.
 
-### 4. Embedded Configuration
+### 4. File Icon Integration
+
+Treefile integrates with Windows Explorer and the POSIX file manager of your choice to display custom icons for `.treefile` files.
+
+- **Windows**: Register the context menu and file icon using `register_icon.bat`
+- **macOS/Linux**: Use `register_icon.sh` to set up custom file icon and the context menu actions.
+
+### 5. Embedded Configuration
 
 You can embed configuration options directly in your `.treefile` file by adding a comment line starting with `#!treefile:`:
 
 ```plaintext
-# !treefile: --venv .venv --py python3.8
+#!treefile: --venv .venv --py python3.8
+token-itemize/
+├── token_itemize/
+│   ├── __init__.py
+│   ├── cli.py
+│   └── main.py
+└── tests/
+    └── test_main.py
 ```
 
 ---
@@ -140,11 +154,13 @@ This allows you to set defaults for virtual environments, Python versions, and o
 
 ---
 
-## Context Menu Integration
+## Context Menu and File Icon Integration
+
+Optionally run the following command to register the context menu and file icon if you want to have it integrated with your operating system:
 
 ### Windows
 
-Run the following command to register the context menu:
+Run the `.bat` file as administrator:
 
 ```cmd
 scripts/register_icon.bat
