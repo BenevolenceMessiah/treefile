@@ -30,7 +30,7 @@ pip install treefile
 Alternatively, you can clone the repository and install it manually in an editable mode (Ensure Python 3.6 or later installed):
 
 ```bash
-git clone https://github.com/yourusername/treefile.git
+git clone https://github.com/BenevolenceMessiah/treefile.git
 cd treefile
 pip install -e .
 ```
