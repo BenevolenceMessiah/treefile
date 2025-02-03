@@ -13,7 +13,7 @@ DEFAULT_CONFIG_FILE = Path(__file__).parent.parent / "config.yaml"
 
 def load_config():
     if DEFAULT_CONFIG_FILE.exists():
-        with open(DEFAULT_CONFIG_FILE, "r") as f:
+        with open(DEFAULT_CONFIG_FILE, "r", encoding="utf-8") as f:
             return yaml.safe_load(f)
     return {}
 
@@ -51,7 +51,8 @@ def main(treefile_path, output, venv_name, python_version, activate, dry_run, fo
             click.echo("No changes detected in the .treefile file. Skipping generation.")
             sys.exit(0)
 
-    with open(treefile_abs, "r") as f:
+    # Open the file explicitly with UTF-8 encoding.
+    with open(treefile_abs, "r", encoding="utf-8") as f:
         lines = f.readlines()
 
     # Check for embedded options on the first nonempty line starting with "#!treefile:"

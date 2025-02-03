@@ -1,6 +1,5 @@
 import re
 
-
 class Node:
     def __init__(self, name, is_dir, indent_level):
         self.name = name
@@ -21,6 +20,9 @@ def parse_treefile(content):
     nodes = []
     stack = []  # Each element is (indent_level, node)
 
+    # Regex to remove any leading box-drawing characters and subsequent spaces.
+    branch_re = re.compile(r'^[\u2500-\u257F]+[\s]*')
+
     for raw_line in lines:
         # Skip empty lines
         if not raw_line.strip():
@@ -30,15 +32,10 @@ def parse_treefile(content):
         leading = len(raw_line) - len(raw_line.lstrip(" "))
         indent_level = leading // 4
 
-        # Remove common tree-drawing characters and extra whitespace
+        # Remove leading and trailing whitespace
         line = raw_line.strip()
-        # Remove branch markers if present.
-        if line.startswith("├── "):
-            line = line[4:]
-        elif line.startswith("└── "):
-            line = line[4:]
-        elif line.startswith("── "):
-            line = line[3:]
+        # Remove any tree branch characters (even if mis-encoded, the codepoints should match)
+        line = branch_re.sub('', line)
         # Now, line is the file/directory name.
         name = line
 

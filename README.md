@@ -13,11 +13,13 @@ This project aims to simplify the process of setting up projects or generating b
 - [Command Line Arguments](#command-line-arguments)
 - [Features](#features)
 - [Configuration File](#configuration-file)
-- [Context Menu Integration](#context-menu-integration)
+- [Context Menu and File Icon Integration](#context-menu-and-file-icon-integration)
+- [Contributing](#contributing)
+- [License](#license)
 
 ---
 
-### Installation
+## Installation
 
 To install Treefile, use pip:
 
@@ -25,12 +27,12 @@ To install Treefile, use pip:
 pip install treefile
 ```
 
-Alternatively, you can clone the repository and install it manually:
+Alternatively, you can clone the repository and install it manually in an editable mode (Ensure Python 3.6 or later installed):
 
 ```bash
-git clone https://github.com/BenevolenceMessiah/treefile.git
+git clone https://github.com/yourusername/treefile.git
 cd treefile
-python setup.py install
+pip install -e .
 ```
 
 ---
@@ -43,7 +45,7 @@ Treefile reads a `.treefile` configuration file and generates the corresponding 
 
 1. Create a `.treefile` file with your desired structure:
 
-```plaintext
+```treefile
 project/
     src/
         main.py
@@ -58,13 +60,11 @@ treefile --file project.treefile --output output_dir
 
 3. The files and directories will be created in the specified output directory.
 
----
-
 ### Sample `.treefile` File Showing 'Tree Branches'
 
-Lines can also include UTF‑8 “tree branch” characters (e.g., ├──, └──), though this is optional. Indentation (preferably using 4 spaces) defines hierarchy.
+Lines can also include UTF-8 “tree branch” characters (e.g., ├──, └──), though this is optional. Indentation (preferably using 4 spaces) defines hierarchy:
 
-```plaintext
+```treefile
 token-itemize/
 ├── token_itemize/
 │   ├── __init__.py
@@ -118,16 +118,16 @@ Treefile supports right-click context menu integration (Unpack Treefile) for `.t
 
 ### 4. File Icon Integration
 
-Treefile integrates with Windows Explorer and the POSIX file manager of your choice to display custom icons for `.treefile` files.
+Treefile integrates with Windows Explorer and the POSIX file manager of your choice to display custom icons for `.treefile` files:
 
 - **Windows**: Register the context menu and file icon using `register_icon.bat`
-- **macOS/Linux**: Use `register_icon.sh` to set up custom file icon and the context menu actions.
+- **macOS/Linux**: Use `register_icon.sh` to set up custom file icons and the context menu actions.
 
 ### 5. Embedded Configuration
 
 You can embed configuration options directly in your `.treefile` file by adding a comment line starting with `#!treefile:`:
 
-```plaintext
+```treefile
 #!treefile: --venv .venv --py python3.8
 token-itemize/
 ├── token_itemize/
