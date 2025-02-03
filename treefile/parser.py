@@ -6,49 +6,66 @@ class Node:
         self.is_dir = is_dir
         self.indent_level = indent_level
         self.children = []
-
+    
     def __repr__(self):
-        return f"Node(name={self.name!r}, is_dir={self.is_dir}, children={self.children})"
+        return f"Node(name={self.name!r}, is_dir={self.is_dir}, indent={self.indent_level}, children={self.children})"
+
+def get_indent_and_name(line):
+    """
+    Determine the indent level and clean file/folder name from a line.
+    
+    This function handles lines that include tree branch characters from the typical output of the "tree" command.
+    It uses a regular expression to detect a branch marker pattern.
+    
+    For example:
+      "├── token_itemize/"           -> indent level = 1, name = "token_itemize/"
+      "│   ├── _init_.py"             -> indent level = 2, name = "_init_.py"
+      "└── tests/"                   -> indent level = 1, name = "tests/"
+      "    └── test_main.py"          -> indent level = 2, name = "test_main.py"
+    """
+    # Try to match a pattern with an optional leading space, followed by one or more branch markers and "── ", then the name.
+    m = re.match(r'^( *)([│├└].*?── )(.*)$', line)
+    if m:
+        # Leading spaces (if any) before the branch markers.
+        leading_spaces = len(m.group(1)) // 4
+        # In the branch part, count every occurrence of a branch marker.
+        branch_part = m.group(2)
+        branch_count = sum(1 for ch in branch_part if ch in "│├└")
+        indent_level = leading_spaces + branch_count
+        name = m.group(3).strip()
+        return indent_level, name
+    else:
+        # If no branch marker pattern is detected, use leading spaces only.
+        stripped = line.lstrip(" ")
+        indent_level = (len(line) - len(stripped)) // 4
+        return indent_level, stripped.strip()
 
 def parse_treefile(content):
     """
-    Parse the .treefile file content (as a string) and return a list of top-level Node objects.
-    Lines may be indented using spaces or use tree branch characters such as "├──", "└──", or "│   ".
-    This function replaces these branch markers with four spaces so that the indent level is computed correctly.
+    Parse the .treefile content (a string) and return a list of top-level Node objects.
+    
+    Each non-empty line is processed with `get_indent_and_name` to determine its indent level and name.
     """
     lines = content.splitlines()
     nodes = []
-    stack = []  # Each element is (indent_level, node)
+    stack = []  # Stack holds tuples of (indent_level, node)
 
     for raw_line in lines:
-        # Skip empty lines.
         if not raw_line.strip():
             continue
-
-        # First, replace branch markers at the beginning of the line with four spaces.
-        # The patterns "├── " and "└── " will be replaced by 4 spaces.
-        line_processed = re.sub(r'^(├── |└── )', '    ', raw_line)
-        # Also, if the line starts with "│   ", replace that with 4 spaces.
-        line_processed = re.sub(r'^(│   )', '    ', line_processed)
         
-        # Determine indent level based on leading spaces (assuming 4 spaces per level).
-        leading = len(line_processed) - len(line_processed.lstrip(" "))
-        indent_level = leading // 4
-
-        # Remove leading spaces to get the file or folder name.
-        name = line_processed.lstrip(" ")
-
-        # Determine if this is a directory (ends with a slash) or a file.
+        indent_level, name = get_indent_and_name(raw_line)
+        
+        # Determine if this is a directory: conventionally, its name ends with a slash.
         is_dir = name.endswith("/")
         node = Node(name, is_dir, indent_level)
-
-        # Place node into the tree using the computed indent level.
+        
+        # Place the node in the tree structure based on its indent level.
         if not stack:
-            # Top-level node.
             nodes.append(node)
             stack.append((indent_level, node))
         else:
-            # Pop the stack until we find a node with a lower indent level.
+            # Pop from the stack until we find a node with a lower indent level.
             while stack and indent_level <= stack[-1][0]:
                 stack.pop()
             if stack:

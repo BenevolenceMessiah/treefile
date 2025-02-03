@@ -50,7 +50,7 @@ def main(treefile_path, output, venv_name, python_version, activate, dry_run, fo
     with open(treefile_abs, "r", encoding="utf-8") as f:
         lines = f.readlines()
 
-    # Process embedded options if any.
+    # Process embedded options if present.
     embedded_options = {}
     if lines:
         first_line = lines[0].strip()
@@ -100,7 +100,12 @@ def main(treefile_path, output, venv_name, python_version, activate, dry_run, fo
 
     if venv_name:
         try:
-            venv_path = create_virtualenv(base_path, venv_name, python_version, dry_run=dry_run)
+            # If exactly one top-level node is a directory, use that as the project root.
+            if len(tree_nodes) == 1 and tree_nodes[0].is_dir:
+                project_root = base_path / tree_nodes[0].name.rstrip("/")
+            else:
+                project_root = base_path
+            venv_path = create_virtualenv(project_root, venv_name, python_version, dry_run=dry_run)
         except Exception as e:
             click.echo(f"Error creating virtual environment: {e}", err=True)
             sys.exit(1)
