@@ -10,40 +10,39 @@ class Node:
     def __repr__(self):
         return f"Node(name={self.name!r}, is_dir={self.is_dir}, children={self.children})"
 
-
 def parse_treefile(content):
     """
     Parse the .treefile file content (as a string) and return a list of top-level Node objects.
-    Lines should be indented (preferably using 4 spaces per level) and may include tree branch characters.
+    Lines may be indented using spaces or use tree branch characters such as "├──", "└──", or "│   ".
+    This function replaces these branch markers with four spaces so that the indent level is computed correctly.
     """
     lines = content.splitlines()
     nodes = []
     stack = []  # Each element is (indent_level, node)
 
-    # Regex to remove any leading box-drawing characters and subsequent spaces.
-    branch_re = re.compile(r'^[\u2500-\u257F]+[\s]*')
-
     for raw_line in lines:
-        # Skip empty lines
+        # Skip empty lines.
         if not raw_line.strip():
             continue
 
-        # Determine indent level based on leading spaces (assuming 4 spaces per indent)
-        leading = len(raw_line) - len(raw_line.lstrip(" "))
+        # First, replace branch markers at the beginning of the line with four spaces.
+        # The patterns "├── " and "└── " will be replaced by 4 spaces.
+        line_processed = re.sub(r'^(├── |└── )', '    ', raw_line)
+        # Also, if the line starts with "│   ", replace that with 4 spaces.
+        line_processed = re.sub(r'^(│   )', '    ', line_processed)
+        
+        # Determine indent level based on leading spaces (assuming 4 spaces per level).
+        leading = len(line_processed) - len(line_processed.lstrip(" "))
         indent_level = leading // 4
 
-        # Remove leading and trailing whitespace
-        line = raw_line.strip()
-        # Remove any tree branch characters (even if mis-encoded, the codepoints should match)
-        line = branch_re.sub('', line)
-        # Now, line is the file/directory name.
-        name = line
+        # Remove leading spaces to get the file or folder name.
+        name = line_processed.lstrip(" ")
 
         # Determine if this is a directory (ends with a slash) or a file.
         is_dir = name.endswith("/")
         node = Node(name, is_dir, indent_level)
 
-        # Place node into the tree using the current indent level.
+        # Place node into the tree using the computed indent level.
         if not stack:
             # Top-level node.
             nodes.append(node)

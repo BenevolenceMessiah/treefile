@@ -10,13 +10,11 @@ from .utils import should_reprocess
 
 DEFAULT_CONFIG_FILE = Path(__file__).parent.parent / "config.yaml"
 
-
 def load_config():
     if DEFAULT_CONFIG_FILE.exists():
         with open(DEFAULT_CONFIG_FILE, "r", encoding="utf-8") as f:
             return yaml.safe_load(f)
     return {}
-
 
 @click.command()
 @click.option("--file", "treefile_path", required=True, type=click.Path(exists=True), help="Path to the .treefile file")
@@ -36,7 +34,6 @@ def main(treefile_path, output, venv_name, python_version, activate, dry_run, fo
         sys.exit(0)
 
     config = load_config()
-    # Use config defaults if options not explicitly provided.
     if venv_name is None:
         venv_name = config.get("venv", ".venv")
     if python_version is None:
@@ -45,17 +42,15 @@ def main(treefile_path, output, venv_name, python_version, activate, dry_run, fo
         output = config.get("output", ".")
 
     treefile_abs = Path(treefile_path).resolve()
-    # Check caching to avoid reprocessing if the file has not changed.
     if not force and not dry_run and treefile_abs.exists():
         if not should_reprocess(treefile_abs):
             click.echo("No changes detected in the .treefile file. Skipping generation.")
             sys.exit(0)
 
-    # Open the file explicitly with UTF-8 encoding.
     with open(treefile_abs, "r", encoding="utf-8") as f:
         lines = f.readlines()
 
-    # Check for embedded options on the first nonempty line starting with "#!treefile:"
+    # Process embedded options if any.
     embedded_options = {}
     if lines:
         first_line = lines[0].strip()
@@ -73,10 +68,8 @@ def main(treefile_path, output, venv_name, python_version, activate, dry_run, fo
                         i += 1
                 else:
                     i += 1
-            # Remove the embedded options line from further processing.
             lines = lines[1:]
 
-    # Merge embedded options with CLI options (CLI takes precedence)
     if venv_name is None and "venv" in embedded_options:
         venv_name = embedded_options["venv"]
     if python_version is None and "py" in embedded_options:
@@ -114,13 +107,11 @@ def main(treefile_path, output, venv_name, python_version, activate, dry_run, fo
         if activate:
             try:
                 activate_virtualenv(venv_path)
-                # The activation function spawns a new shell, so this process may not return.
             except Exception as e:
                 click.echo(f"Error activating virtual environment: {e}", err=True)
                 sys.exit(1)
 
     click.echo("File tree generation complete.")
-
 
 if __name__ == "__main__":
     main()
